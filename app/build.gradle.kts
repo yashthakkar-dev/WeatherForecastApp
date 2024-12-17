@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.ksp)
 }
 
@@ -41,55 +42,43 @@ android {
 }
 
 dependencies {
-
-    //Dagger - Hilt
+    // Hilt for dependency injection
     implementation(libs.hilt.android)
-
-    implementation(libs.androidx.hilt.lifecycle.viewmodel)
-// Dagger - Hilt
     ksp(libs.hilt.android.compiler)
-    implementation(libs.androidx.hilt.lifecycle.viewmodel)
-    ksp(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    //material icons - use with caution!
-     implementation(libs.androidx.material.icons.extended)
-    // Coroutines
+    // Coroutines for asynchronous operations
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.play.services)
 
-    // Coroutine Lifecycle Scopes
+    // Jetpack Lifecycle & ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-    // Coil
-    implementation(libs.coil.compose)
-
-    // Retrofit
-    implementation(libs.retrofit)
-
-    // OkHttp
-    implementation(libs.okhttp)
-
-    // JSON Converter
-    implementation(libs.converter.gson)
-
-    //Room
-    implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.androidx.room.compiler)
-
-    // To use Kotlin annotation processing tool (kapt) MUST HAVE!
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
-
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+
+    // Compose UI & Material Design
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Activity Compose Integration
+    implementation(libs.androidx.activity.compose)
+
+    // Coil for image loading
+    implementation(libs.coil.compose)
+
+    // Networking with Retrofit and OkHttp
+    implementation(libs.retrofit)
+    implementation(libs.okhttp)
+    implementation(libs.converter.gson)
+
+    // Room for local database
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+    // Testing libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
