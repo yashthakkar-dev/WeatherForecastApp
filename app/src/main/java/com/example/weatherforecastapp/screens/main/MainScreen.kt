@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +36,7 @@ import androidx.navigation.NavController
 import com.example.weatherforecastapp.data.DataOrException
 import com.example.weatherforecastapp.model.Weather
 import com.example.weatherforecastapp.model.WeatherItem
+import com.example.weatherforecastapp.navigation.WeatherScreens
 import com.example.weatherforecastapp.utils.formatDate
 import com.example.weatherforecastapp.utils.formatDecimals
 import com.example.weatherforecastapp.widgets.HumidityWindPressureRow
@@ -47,7 +46,11 @@ import com.example.weatherforecastapp.widgets.WeatherDetailRow
 import com.example.weatherforecastapp.widgets.WeatherStateImage
 
 @Composable
-fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
+fun MainScreen(
+    navController: NavController,
+    viewModel: MainViewModel = hiltViewModel(),
+    city: String?
+) {
 
     var isImperial by remember {
         mutableStateOf(false)
@@ -56,7 +59,7 @@ fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltView
     val weatherData = produceState<DataOrException<Weather, Boolean, Exception>>(
         initialValue = DataOrException(loading = true)
     ) {
-        value = viewModel.getWeather("Montreal")
+        value = viewModel.getWeather(city ?: "Montreal")
     }.value
 
     if (weatherData.loading == true) {
@@ -76,7 +79,9 @@ fun MainScaffold(weather: Weather, navController: NavController, isImperial: Boo
             WeatherAppBar(
                 title = weather.city.name + ", ${weather.city.country}",
                 navController = navController,
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                onAddActionClicked = {
+                    navController.navigate(WeatherScreens.SearchScreen.name)
+                },
                 elevation = 5.dp
             )
         }
