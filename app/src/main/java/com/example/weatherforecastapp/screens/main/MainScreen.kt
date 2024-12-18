@@ -85,8 +85,14 @@ fun MainScaffold(weather: Weather, navController: NavController, isImperial: Boo
                 elevation = 5.dp
             )
         }
-    ) {
-        MainContent(data = weather, isImperial = isImperial)
+    ) { paddingValues ->
+        Surface(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            MainContent(data = weather, isImperial = isImperial)
+        }
     }
 }
 
