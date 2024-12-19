@@ -3,19 +3,34 @@ package com.example.weatherforecastapp.widgets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -26,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.weatherforecastapp.navigation.WeatherScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +54,15 @@ fun WeatherAppBar(
     onAddActionClicked: () -> Unit = {},
     onButtonClicked: () -> Unit = {}
 ) {
+
+    val showDialog = remember {
+        mutableStateOf(false)
+    }
+
+    if (showDialog.value) {
+        ShowSettingDropDownMenu(showDialog = showDialog, navController = navController)
+    }
+
     Box(
         modifier = Modifier
             .padding(8.dp)
@@ -65,7 +90,7 @@ fun WeatherAppBar(
                     }
 
                     IconButton(onClick = {
-
+                        showDialog.value = true
                     }) {
                         Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = "More icon")
                     }
@@ -77,13 +102,75 @@ fun WeatherAppBar(
                         imageVector = icon,
                         contentDescription = "navigationIcon",
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.
-                        clickable {
+                        modifier = Modifier.clickable {
                             onButtonClicked.invoke()
                         }
                     )
                 }
             },
         )
+    }
+}
+
+@Composable
+fun ShowSettingDropDownMenu(
+    showDialog: MutableState<Boolean>,
+    navController: NavController
+) {
+    val expanded = remember {
+        mutableStateOf(true)
+    }
+    val items = listOf("About", "Favorites", "Settings")
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentSize(Alignment.TopEnd)
+            .absolutePadding(top = 45.dp, right = 20.dp)
+    ) {
+        DropdownMenu(
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false },
+            modifier = Modifier
+                .width(175.dp)
+                .background(Color.White)
+        ) {
+            items.forEachIndexed { _, text ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = text,
+                            fontWeight = FontWeight.W300
+                        )
+                    },
+                    onClick = {
+                        expanded.value = false
+                        showDialog.value = false
+                        navController.navigate(
+                            when (text) {
+                                "About" -> WeatherScreens.AboutScreen.name
+                                "Favorites" -> WeatherScreens.FavoriteScreen.name
+                                else -> WeatherScreens.SettingsScreen.name
+                            }
+                        )
+                    },
+                    modifier = Modifier,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = when (text) {
+                                "About" -> Icons.Default.Info
+                                "Favorites" -> Icons.Default.FavoriteBorder
+                                else -> Icons.Default.Settings
+                            },
+                            contentDescription = null,
+                            tint = Color.LightGray
+                        )
+                    },
+                    trailingIcon = { },
+                    enabled = true,
+                    colors = MenuDefaults.itemColors(),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                )
+            }
+        }
     }
 }
