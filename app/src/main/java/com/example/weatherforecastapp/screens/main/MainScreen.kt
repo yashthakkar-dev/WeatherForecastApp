@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -37,6 +38,7 @@ import com.example.weatherforecastapp.data.DataOrException
 import com.example.weatherforecastapp.model.Weather
 import com.example.weatherforecastapp.model.WeatherItem
 import com.example.weatherforecastapp.navigation.WeatherScreens
+import com.example.weatherforecastapp.screens.settings.SettingsViewModel
 import com.example.weatherforecastapp.utils.formatDate
 import com.example.weatherforecastapp.utils.formatDecimals
 import com.example.weatherforecastapp.widgets.HumidityWindPressureRow
@@ -48,25 +50,39 @@ import com.example.weatherforecastapp.widgets.WeatherStateImage
 @Composable
 fun MainScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     city: String?
 ) {
 
+    val unitFromDb = settingsViewModel.unitList.collectAsState().value
+    var unit by remember {
+        mutableStateOf("imperial")
+    }
     var isImperial by remember {
         mutableStateOf(false)
     }
 
-    val weatherData = produceState<DataOrException<Weather, Boolean, Exception>>(
-        initialValue = DataOrException(loading = true)
-    ) {
-        value = viewModel.getWeather(city ?: "Montreal")
-    }.value
+    if (unitFromDb.isNotEmpty()) {
+        unit = unitFromDb[0].unit.split(" ")[0].lowercase()
+        isImperial = unit == "imperial"
+        val weatherData = produceState<DataOrException<Weather, Boolean, Exception>>(
+            initialValue = DataOrException(loading = true)
+        ) {
+            value = mainViewModel.getWeather(city ?: "Montreal", unit = unit)
+        }.value
 
-    if (weatherData.loading == true) {
-        CircularProgressIndicator()
-    } else if (weatherData.data != null) {
-        MainScaffold(weatherData.data!!, navController, isImperial = isImperial)
+        if (weatherData.loading == true) {
+            CircularProgressIndicator()
+        } else if (weatherData.data != null) {
+            MainScaffold(weatherData.data!!, navController, isImperial = isImperial)
+        }
     }
+
+
+
+
+
 
 }
 

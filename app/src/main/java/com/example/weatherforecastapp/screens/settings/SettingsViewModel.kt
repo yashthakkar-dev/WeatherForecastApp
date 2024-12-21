@@ -23,14 +23,20 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.getUnits().distinctUntilChanged()
-                .collect { listOfUnits ->
-                    if (listOfUnits.isNullOrEmpty()) {
-                        Log.d("TAG", ":Empty list ")
-                    }else {
-                        _unitList.value = listOfUnits
+            try {
+                repository.getUnits()
+                    .distinctUntilChanged()
+                    .collect { listOfUnits ->
+                        if (listOfUnits.isEmpty()) {
+                            Log.d("SettingsViewModel", "No units found in the database.")
+                        } else {
+                            _unitList.value = listOfUnits
+                            Log.d("SettingsViewModel", "Loaded units: $listOfUnits")
+                        }
                     }
-                }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Error fetching units: ${e.message}", e)
+            }
         }
     }
 
