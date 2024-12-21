@@ -8,9 +8,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.weatherforecastapp.screens.about.AboutScreen
+import com.example.weatherforecastapp.screens.favorites.FavoriteViewModel
+import com.example.weatherforecastapp.screens.favorites.FavoritesScreen
 import com.example.weatherforecastapp.screens.main.MainScreen
 import com.example.weatherforecastapp.screens.main.MainViewModel
 import com.example.weatherforecastapp.screens.search.SearchScreen
+import com.example.weatherforecastapp.screens.settings.SettingsScreen
+import com.example.weatherforecastapp.screens.settings.SettingsViewModel
 import com.example.weatherforecastapp.screens.splash.SplashScreen
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -45,6 +50,20 @@ fun WeatherNavigation() {
 
         composable(WeatherScreens.SearchScreen.name) {
             SearchScreen(navController = navController)
+        }
+
+        composable(WeatherScreens.AboutScreen.name) {
+            AboutScreen(navController = navController)
+        }
+
+        composable(WeatherScreens.SettingsScreen.name) {
+            val settingsViewModel = hiltViewModel<SettingsViewModel>()
+            SettingsScreen(navController = navController, settingsViewModel)
+        }
+
+        composable(WeatherScreens.FavoriteScreen.name) {
+            val favoriteViewModel = hiltViewModel<FavoriteViewModel>()
+            FavoritesScreen(navController = navController, favoriteViewModel)
         }
 
     }

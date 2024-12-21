@@ -1,5 +1,7 @@
 package com.example.weatherforecastapp.widgets
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
@@ -28,20 +31,27 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.weatherforecastapp.model.Favorite
 import com.example.weatherforecastapp.navigation.WeatherScreens
+import com.example.weatherforecastapp.screens.favorites.FavoriteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +61,7 @@ fun WeatherAppBar(
     isMainScreen: Boolean = true,
     elevation: Dp = 0.dp,
     navController: NavController,
+    favoriteViewModel: FavoriteViewModel = hiltViewModel(),
     onAddActionClicked: () -> Unit = {},
     onButtonClicked: () -> Unit = {}
 ) {
@@ -105,6 +116,33 @@ fun WeatherAppBar(
                         modifier = Modifier.clickable {
                             onButtonClicked.invoke()
                         }
+                    )
+                }
+                if (isMainScreen) {
+                    val dataList = title.split(",")
+                    val isAlreadyFavList = favoriteViewModel.favList.collectAsState().value.filter { item ->
+                        item.city == dataList[0]
+                    }
+
+                    Icon(
+                        imageVector = if (isAlreadyFavList.isEmpty()) Icons.Default.FavoriteBorder else Icons.Filled.Favorite,
+                        contentDescription = "Favorite icon",
+                        tint = Color.Red.copy(alpha = 0.6f),
+                        modifier = Modifier
+                            .scale(0.9f)
+                            .clickable {
+                                val favorite = Favorite(
+                                    city = dataList[0].trim(),
+                                    country = dataList[1].trim()
+                                )
+                                val isCityExist = isAlreadyFavList.contains(favorite)
+                                if (isCityExist){
+                                    favoriteViewModel.deleteFavorite(favorite)
+
+                                } else {
+                                    favoriteViewModel.insertFavorite(favorite)
+                                }
+                            }
                     )
                 }
             },
