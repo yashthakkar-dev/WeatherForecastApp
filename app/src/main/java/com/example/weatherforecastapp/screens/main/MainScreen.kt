@@ -117,7 +117,7 @@ fun MainScreen(
         ) {
             value = if (mainViewModel.isLocationPermissionGranted) {
                 val result = mainViewModel.getWeatherByLocation()
-                mainViewModel.convertTemperature(isImperial, result.data)
+                mainViewModel.convertValues(isImperial, result.data)
             } else
                 mainViewModel.getWeather(city ?: "Montreal", unit = unit)
         }.value

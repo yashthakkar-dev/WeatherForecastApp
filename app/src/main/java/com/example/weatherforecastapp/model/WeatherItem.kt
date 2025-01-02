@@ -10,7 +10,7 @@ data class WeatherItem(
     val pop: Double,
     val pressure: Int,
     val rain: Double,
-    val speed: Double,
+    var speed: Double,
     val sunrise: Int,
     val sunset: Int,
     val temp: Temp,

@@ -23,6 +23,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlin.math.round
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -94,27 +95,37 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun convertTemperature(
+    fun convertValues(
         isImperial: Boolean,
         weather: Weather?
     ): DataOrException<Weather, Boolean, Exception> {
         if (weather == null || weather.list.isEmpty()) return DataOrException(e = Exception("Empty list"))
 
-        // Define conversion factor based on unit type
-        val conversionFactor = if (isImperial) -459.67 else -273.15
+        // Pre-compute the conversion factors
+        val speedConversionFactor = if (isImperial) 2.23694 else 3.6
+        val temperatureConversionFactor = if (isImperial) 9.0 / 5 else 1.0  // Ensure the result is Double
+        val temperatureOffset = if (isImperial) 32.0 else 0.0  // Use Double for offset
 
-        // Create a new list with modified temperatures
+        // Create a new list with modified temperatures and wind speeds
         val updatedList = weather.list.map { item ->
-            item.apply {
-                temp.min += conversionFactor
-                temp.max += conversionFactor
-            }
+            item.copy(
+                speed = round(item.speed * speedConversionFactor),
+                temp = item.temp.copy(
+                    min = convertTemperature(item.temp.min, temperatureConversionFactor, temperatureOffset),
+                    max = convertTemperature(item.temp.max, temperatureConversionFactor, temperatureOffset),
+                    day = convertTemperature(item.temp.day, temperatureConversionFactor, temperatureOffset)
+                )
+            )
         }
 
         // Return the updated Weather object
         return DataOrException(data = weather.copy(list = updatedList))
     }
 
+    // Helper function to convert temperature based on the unit system (Imperial or Metric)
+    private fun convertTemperature(temperatureInKelvin: Double, conversionFactor: Double, offset: Double): Double {
+        return (temperatureInKelvin - 273.15) * conversionFactor + offset
+    }
 
     suspend fun getWeather(
         city: String,

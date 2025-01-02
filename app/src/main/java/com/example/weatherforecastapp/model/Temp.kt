@@ -1,7 +1,7 @@
 package com.example.weatherforecastapp.model
 
 data class Temp(
-    val day: Double,
+    var day: Double,
     val eve: Double,
     var max: Double,
     var min: Double,

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -40,6 +44,11 @@ import com.example.weatherforecastapp.utils.formatDecimals
 @Composable
 fun WeatherDetailRow(weather: WeatherItem) {
     val imageUrl = "https://openweathermap.org/img/wn/${weather.weather[0].icon}.png"
+
+    // Get screen width percentage
+    val configuration = LocalConfiguration.current
+    val boxWidth = configuration.screenWidthDp * 0.35f
+    val boxHeight = configuration.screenHeightDp * 0.04f
 
     // Outer Box with shadow effect
     Box(
@@ -81,12 +90,11 @@ fun WeatherDetailRow(weather: WeatherItem) {
                 // Weather Icon
                 WeatherStateImage(imageUrl = imageUrl)
 
-                // Weather Description inside Ellipse
+                // Weather Description inside Ellipse with percentage of screen width
                 Surface(
-                    modifier = Modifier.size(
-                        width = 90.dp,
-                        height = 32.dp
-                    ), // Slightly smaller ellipse
+                    modifier = Modifier
+                        .width(boxWidth.dp)
+                        .height(boxHeight.dp),
                     shape = CircleShape,
                     color = Color(0xFFFFC400)
                 ) {
@@ -139,7 +147,9 @@ fun SunsetSunRiseRow(weather: WeatherItem) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.sunrise),
                 contentDescription = "sunrise",
@@ -151,7 +161,9 @@ fun SunsetSunRiseRow(weather: WeatherItem) {
             )
         }
 
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = formatDateTime(weather.sunset),
                 style = MaterialTheme.typography.bodyMedium
@@ -177,7 +189,7 @@ fun HumidityWindPressureRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(modifier = Modifier.padding(4.dp)) {
+        Row {
             Icon(
                 painter = painterResource(id = R.drawable.humidity),
                 contentDescription = "humidity icon",
@@ -199,7 +211,6 @@ fun HumidityWindPressureRow(
                 text = "${weather.pressure} psi",
                 style = MaterialTheme.typography.bodyMedium
             )
-
         }
 
         Row {
@@ -209,7 +220,7 @@ fun HumidityWindPressureRow(
                 modifier = Modifier.size(20.dp)
             )
             Text(
-                text = "${formatDecimals(weather.speed)} " + if (isImperial) "mph" else "m/s",
+                text = "${formatDecimals(weather.speed)} " + if (isImperial) "mph" else "km/h",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
