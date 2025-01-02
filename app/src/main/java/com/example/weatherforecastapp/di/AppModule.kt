@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.weatherforecastapp.data.WeatherDao
 import com.example.weatherforecastapp.data.WeatherDatabase
 import com.example.weatherforecastapp.network.WeatherApi
+import com.example.weatherforecastapp.repository.WeatherRepository
 import com.example.weatherforecastapp.utils.Constants
 import dagger.Module
 import dagger.Provides
@@ -18,6 +19,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
+
+    @Singleton
+    @Provides
+    fun provideWeatherRepository(api: WeatherApi) = WeatherRepository(api)
 
     @Singleton
     @Provides

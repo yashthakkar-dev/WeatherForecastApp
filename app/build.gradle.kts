@@ -42,8 +42,11 @@ android {
 }
 
 dependencies {
+    implementation(libs.dexter)
+
     // Hilt for dependency injection
     implementation(libs.hilt.android)
+    implementation(libs.play.services.location)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
@@ -67,6 +70,8 @@ dependencies {
 
     // Coil for image loading
     implementation(libs.coil.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.appcompat.resources)
 
     // Networking with Retrofit and OkHttp
     implementation(libs.retrofit)
