@@ -1,7 +1,6 @@
 package com.example.weatherforecastapp.widgets
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,8 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -39,6 +35,7 @@ import com.example.weatherforecastapp.model.WeatherItem
 import com.example.weatherforecastapp.utils.formatDate
 import com.example.weatherforecastapp.utils.formatDateTime
 import com.example.weatherforecastapp.utils.formatDecimals
+import kotlin.math.round
 
 
 @Composable
@@ -164,14 +161,14 @@ fun SunsetSunRiseRow(weather: WeatherItem) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = formatDateTime(weather.sunset),
-                style = MaterialTheme.typography.bodyMedium
-            )
             Image(
                 painter = painterResource(id = R.drawable.sunset),
                 contentDescription = "sunset",
                 modifier = Modifier.size(30.dp)
+            )
+            Text(
+                text = formatDateTime(weather.sunset),
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -214,6 +211,14 @@ fun HumidityWindPressureRow(
         }
 
         Row {
+            Text(
+                text = "Feels Like: ${round(weather.feels_like.day).toInt()}º",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        Row {
             Icon(
                 painter = painterResource(id = R.drawable.wind),
                 contentDescription = "wind icon",
@@ -234,5 +239,4 @@ fun WeatherStateImage(imageUrl: String) {
         contentDescription = "icon image",
         modifier = Modifier.size(80.dp)
     )
-
 }

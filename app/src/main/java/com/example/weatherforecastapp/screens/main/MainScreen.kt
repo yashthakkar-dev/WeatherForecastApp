@@ -1,10 +1,6 @@
 package com.example.weatherforecastapp.screens.main
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,14 +13,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,74 +56,51 @@ fun MainScreen(
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     city: String?
 ) {
-
-    val context = LocalContext.current
-
-    if (mainViewModel.showDialog) {
-        AlertDialog(
-            onDismissRequest = { mainViewModel.showDialog = false },
-            title = { Text("Permissions Required") },
-            text = {
-                Text("It looks like you have turned off Location permissions. It can be enabled under Application Settings.")
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    try {
-                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.fromParts("package", context.packageName, null)
-                        }
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    mainViewModel.showDialog = false
-                }) {
-                    Text("Go To Settings")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { mainViewModel.showDialog = false }) { Text("Cancel") }
-            }
-        )
-    }
+    val locationWeather = mainViewModel.locationWeatherData.value
+    val permissionState = mainViewModel.permissionState
 
     val unitFromDb = settingsViewModel.unitList.collectAsState().value
-    var unit by remember {
-        mutableStateOf("imperial")
-    }
-    var isImperial by remember {
-        mutableStateOf(false)
-    }
+    var unit by remember { mutableStateOf("imperial") }
 
     LaunchedEffect(unitFromDb) {
         if (unitFromDb.isEmpty()) {
             settingsViewModel.insertUnit(Unit(unit = "metric"))
         } else {
             unit = unitFromDb[0].unit.split(" ")[0].lowercase()
-            isImperial = unit == "imperial"
+            mainViewModel.isImperial = unit == "imperial"
         }
     }
 
-    if (unitFromDb.isNotEmpty()) {
-        val weatherData = produceState(
-            initialValue = DataOrException(loading = true)
-        ) {
-            value = if (mainViewModel.isLocationPermissionGranted) {
-                val result = mainViewModel.getWeatherByLocation()
-                mainViewModel.convertValues(isImperial, result.data)
-            } else
-                mainViewModel.getWeather(city ?: "Montreal", unit = unit)
-        }.value
+    LaunchedEffect(permissionState) {
+        when (permissionState) {
+            PermissionState.GRANTED -> {
+                mainViewModel.checkPermissionsAndFetchLocation()
+            }
 
-        Log.d(
-            "yash",
-            "isLocationPermissionGranted - ${mainViewModel.isLocationPermissionGranted} weatherData: ${weatherData.data}"
-        )
+            PermissionState.DENIED -> {
+                // No location access; fallback to default city
+            }
 
-        if (weatherData.loading == true) {
+            PermissionState.WAITING -> {
+                // Do nothing while waiting for permission
+            }
+        }
+    }
+
+    if (permissionState == PermissionState.GRANTED && locationWeather.data != null) {
+        // Display weather data based on location
+        MainScaffold(locationWeather.data!!, navController, isImperial = mainViewModel.isImperial)
+    } else if (permissionState != PermissionState.WAITING && unitFromDb.isNotEmpty()) {
+        // Display weather data based on city (fallback)
+        val cityWeather =
+            produceState(initialValue = DataOrException<Weather, Boolean, Exception>()) {
+                value = mainViewModel.getWeather(city ?: "Toronto", unit)
+            }.value
+
+        if (cityWeather.data != null) {
+            MainScaffold(cityWeather.data!!, navController, isImperial = mainViewModel.isImperial)
+        } else if (cityWeather.loading == true) {
             CircularProgressIndicator()
-        } else if (weatherData.data != null) {
-            MainScaffold(weatherData.data!!, navController, isImperial = isImperial)
         }
     }
 }
